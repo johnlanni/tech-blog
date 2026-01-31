@@ -4,4 +4,4 @@
 
 ## 文章列表
 
-- [30分钟搞定 Nginx 到 Higress 迁移？AI 帮我干完了脏活累活](./nginx-to-higress-migration-with-ai.md)
+- [30分钟搞定 Ingress Nginx 到 Higress 迁移？AI 帮我干完了脏活累活](./nginx-to-higress-migration-with-ai.md)

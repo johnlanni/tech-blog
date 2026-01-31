@@ -1,4 +1,4 @@
-# 30分钟搞定 Nginx 到 Higress 迁移？AI 帮我干完了脏活累活
+# 30分钟搞定 Ingress Nginx 到 Higress 迁移？AI 帮我干完了脏活累活
 
 > 作者：一个不想加班的网关运维
 
