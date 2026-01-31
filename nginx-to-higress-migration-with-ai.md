@@ -187,33 +187,53 @@ Clawdbot 分析 Lua 代码，提取出核心逻辑：
 
 ```go
 // 自动生成的 WASM 插件核心逻辑
-func (ctx *DeviceOnlinePlugin) OnHttpRequestHeaders(numHeaders int, endOfStream bool) types.Action {
+func onHttpRequestHeaders(ctx wrapper.HttpContext, cfg config.DeviceOnlineConfig) types.Action {
     // 读取加密设备号参数
-    path, _ := proxywasm.GetProperty([]string{"request", "path"})
-    encryptedDevice := extractQueryParam(string(path), "d")
+    encryptedDevice := getQueryParam(ctx, "d")
     if encryptedDevice == "" {
-        proxywasm.SendHttpResponse(400, nil, []byte("Missing device parameter"), -1)
+        proxywasm.SendHttpResponse(400, "device-online.missing_param", 
+            nil, []byte("Missing device parameter"), -1)
         return types.ActionPause
     }
     
     // AES 解密设备号
-    deviceID, err := ctx.aesDecrypt(encryptedDevice)
+    deviceID, err := aesDecrypt(encryptedDevice, cfg.AESKey)
     if err != nil {
         proxywasm.LogErrorf("Failed to decrypt device ID: %v", err)
-        proxywasm.SendHttpResponse(403, nil, []byte("Invalid device ID"), -1)
+        proxywasm.SendHttpResponse(403, "device-online.decrypt_failed",
+            nil, []byte("Invalid device ID"), -1)
         return types.ActionPause
     }
     
-    // 异步更新 Redis（使用 Higress Redis cluster）
-    key := "device:online:" + deviceID
-    value := fmt.Sprintf("%d", time.Now().Unix())
-    ctx.redisClient.SetEx(key, value, 300) // TTL 300 秒
+    // 异步更新 Redis（使用 Lua 脚本保证原子性）
+    key := fmt.Sprintf("device:online:%s", deviceID)
+    timestamp := time.Now().Unix()
     
-    return types.ActionContinue
+    script := `redis.call('setex', KEYS[1], ARGV[1], ARGV[2]); return 1`
+    keys := []interface{}{key}
+    args := []interface{}{cfg.TTL, timestamp}
+    
+    err = cfg.RedisClient.Eval(script, 1, keys, args, func(response resp.Value) {
+        if response.Integer() == 1 {
+            proxywasm.LogInfof("Device %s online status updated", deviceID)
+        }
+        proxywasm.ResumeHttpRequest()
+    })
+    
+    if err != nil {
+        proxywasm.LogErrorf("Redis call failed: %v", err)
+        return types.ActionContinue // 降级：Redis 失败不阻塞请求
+    }
+    
+    return types.HeaderStopAllIterationAndWatermark
 }
 ```
 
-生成的代码包含完整的参数解析、AES 解密、Redis 连接池管理，开箱即用。
+生成的代码包含：
+- 完整的参数解析和 AES 解密
+- Redis 客户端配置和连接池管理（在 parseConfig 中初始化）
+- 异步 Lua 脚本执行，保证性能
+- 错误降级策略（Redis 失败不影响主流程）
 
 #### 3️⃣ 构建编译（3 秒）
 
