@@ -109,6 +109,170 @@ Clawdbot 生成了测试脚本，覆盖所有 63 个 Ingress 的路由：
 
 Clawdbot 自动生成了替换后的 YAML，在 Kind 环境里验证通过。
 
+### 番外：当内置插件搞不定时——WASM 插件全自动开发
+
+上面的案例比较顺利，内置插件就能覆盖。但我们还有另一套环境，情况就没这么简单了。
+
+那套环境的支付服务有一段 Lua 脚本，实现了 **IP 白名单 + HMAC-SHA256 签名校验** 的双重认证：
+
+```nginx
+location /payment/bindcard {
+  access_by_lua_block {
+    local client_ip = ngx.var.remote_addr
+    local signature = ngx.req.get_headers()["X-Payment-Signature"]
+    local timestamp = ngx.req.get_headers()["X-Timestamp"]
+    
+    -- IP 白名单校验
+    local allowed_ips = {"10.0.1.100", "10.0.1.101", "10.0.2.0/24"}
+    if not check_ip_whitelist(client_ip, allowed_ips) then
+      ngx.log(ngx.ERR, "Blocked IP: " .. client_ip)
+      ngx.exit(403)
+    end
+    
+    -- HMAC-SHA256 签名校验
+    local payload = ngx.var.request_uri .. timestamp
+    local expected = compute_hmac_sha256(payload, secret_key)
+    if signature ~= expected then
+      ngx.log(ngx.ERR, "Invalid signature from: " .. client_ip)
+      ngx.exit(403)
+    end
+  }
+}
+```
+
+这种自定义业务逻辑，没有任何内置插件能直接替代。以前遇到这种情况，要么硬着头皮学 WASM 开发，要么找借口拖延迁移。
+
+但 Clawdbot 结合 `higress-wasm-go-plugin` skill，直接把这活给自动化了。
+
+**我只说了一句话：**
+
+```
+这段 Lua 脚本需要转成 Higress WASM 插件，帮我搞定
+```
+
+**接下来全程自动化：**
+
+#### 1️⃣ 需求分析（3 秒）
+
+Clawdbot 分析 Lua 代码，提取出核心逻辑：
+- IP 白名单校验（支持 CIDR）
+- HMAC-SHA256 签名验证
+- 请求头读取：`X-Payment-Signature`、`X-Timestamp`
+- 错误日志记录
+
+#### 2️⃣ 代码生成（10 秒）
+
+自动生成类型安全的 Go 代码：
+
+```go
+// 自动生成的 WASM 插件核心逻辑
+func (ctx *PaymentAuthPlugin) OnHttpRequestHeaders(numHeaders int, endOfStream bool) types.Action {
+    // 获取客户端 IP
+    clientIP, _ := proxywasm.GetProperty([]string{"source", "address"})
+    
+    // IP 白名单校验
+    if !ctx.checkIPWhitelist(string(clientIP)) {
+        proxywasm.LogErrorf("Blocked IP: %s", clientIP)
+        proxywasm.SendHttpResponse(403, nil, []byte("Forbidden"), -1)
+        return types.ActionPause
+    }
+    
+    // 读取签名相关请求头
+    signature, _ := proxywasm.GetHttpRequestHeader("X-Payment-Signature")
+    timestamp, _ := proxywasm.GetHttpRequestHeader("X-Timestamp")
+    path, _ := proxywasm.GetProperty([]string{"request", "path"})
+    
+    // HMAC-SHA256 签名校验
+    payload := string(path) + timestamp
+    expectedSig := ctx.computeHMAC(payload)
+    if signature != expectedSig {
+        proxywasm.LogErrorf("Invalid signature from: %s", clientIP)
+        proxywasm.SendHttpResponse(403, nil, []byte("Invalid signature"), -1)
+        return types.ActionPause
+    }
+    
+    return types.ActionContinue
+}
+```
+
+生成的代码包含完整的配置解析、CIDR 匹配、HMAC 计算，开箱即用。
+
+#### 3️⃣ 构建编译（1 分钟）
+
+```bash
+# Clawdbot 自动执行
+cd payment-auth-plugin
+go mod tidy
+GOOS=wasip1 GOARCH=wasm go build -o main.wasm ./
+```
+
+编译成功，生成 `main.wasm` 文件。
+
+#### 4️⃣ 打包推送（30 秒）
+
+```bash
+# 构建 OCI 镜像并推送到 Harbor
+docker build -t harbor.internal/higress-plugins/payment-auth:v1 .
+docker push harbor.internal/higress-plugins/payment-auth:v1
+```
+
+#### 5️⃣ 部署验证（1 分钟）
+
+自动生成 WasmPlugin CRD 并部署到 Kind 环境：
+
+```yaml
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: payment-auth
+  namespace: higress-system
+spec:
+  url: oci://harbor.internal/higress-plugins/payment-auth:v1
+  phase: AUTHN
+  priority: 100
+  defaultConfig:
+    allowedIPs:
+      - "10.0.1.100"
+      - "10.0.1.101"  
+      - "10.0.2.0/24"
+    secretKey: "${PAYMENT_SECRET_KEY}"
+```
+
+然后自动跑测试：
+
+```bash
+# 正常请求（白名单 IP + 正确签名）
+curl -H "X-Payment-Signature: ${VALID_SIG}" \
+     -H "X-Timestamp: ${TS}" \
+     http://localhost:8080/payment/bindcard
+# ✅ 200 OK
+
+# 非法 IP
+curl --interface 192.168.1.1 http://localhost:8080/payment/bindcard  
+# ✅ 403 Forbidden
+
+# 错误签名
+curl -H "X-Payment-Signature: invalid" http://localhost:8080/payment/bindcard
+# ✅ 403 Invalid signature
+```
+
+**全部通过。**
+
+#### 整体耗时
+
+| 阶段 | 耗时 | 备注 |
+|-----|-----|------|
+| 需求分析 | 3 秒 | AI 解析 Lua 代码 |
+| 代码生成 | 10 秒 | 生成完整 Go 项目 |
+| 编译构建 | 1 分钟 | WASM 编译 |
+| 镜像推送 | 30 秒 | 推送到 Harbor |
+| 部署验证 | 1 分钟 | CRD 部署 + 测试 |
+| **总计** | **< 3 分钟** | 全程无需手写代码 |
+
+以前这种活，光是学 proxy-wasm SDK 就得一两天，写代码调试再一两天，前后加起来一周起步。现在 **3 分钟**，而且生成的代码质量比我自己写的还规范。
+
+**这才是 AI 辅助开发该有的样子：不是帮你补全几行代码，而是把整个 DevOps 流程自动化。**
+
 ### 第四步：输出操作手册
 
 验证全部通过后，Clawdbot 给我生成了一份操作手册：
