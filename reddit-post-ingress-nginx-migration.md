@@ -3,7 +3,7 @@
 ## Title Options (pick one):
 
 **Option A (Urgent angle):**
-> CNCF is retiring Ingress Nginx in March - Here's how I migrated 60+ Ingress resources in 30 minutes using AI
+> Kubernetes is retiring Ingress Nginx in March 2026 - Here's how I migrated 60+ Ingress resources in 30 minutes using AI
 
 **Option B (Practical angle):**
 > Migrated from Ingress Nginx to Higress in 30 min with AI assistance - here's my experience
@@ -17,10 +17,13 @@
 
 Hey r/kubernetes,
 
-Like many of you, I got the wake-up call from CNCF:
+Like many of you, I got the wake-up call from the Kubernetes Steering Committee and Security Response Committee:
 
-> **Ingress Nginx will be retired in March 2025.**
-> Continuing to use Ingress NGINX after support ends exposes you and your users to security risks. None of the existing alternatives are drop-in replacements. Migration takes time and engineering resources. About half of users will be affected. **You have two months to prepare.**
+> **Ingress NGINX will be retired in March 2026.**
+> 
+> Choosing to remain with Ingress NGINX after its retirement leaves you and your users vulnerable to attack. None of the available alternatives are direct drop-in replacements. Migration takes time and engineering resources. **About half of cloud native environments will be affected. You have two months left to prepare.**
+> 
+> Official statement: https://kubernetes.io/blog/2026/01/29/ingress-nginx-statement/
 
 We have 60+ Ingress resources in production, some with custom Lua snippets. I was mentally preparing for a week of painful migration work.
 
