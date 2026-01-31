@@ -138,34 +138,36 @@ Clawdbot 生成了测试脚本，覆盖所有 63 个 Ingress 的路由：
 
 上面的案例比较顺利，内置插件就能覆盖。但我们还有另一套环境，情况就没这么简单了。
 
-那套环境的支付服务有一段 Lua 脚本，实现了 **IP 白名单 + HMAC-SHA256 签名校验** 的双重认证：
+那套环境的 IoT 平台有一段 Lua 脚本，实现了 **设备在线状态上报到 Redis** 的功能：
 
 ```nginx
-location /payment/bindcard {
+location /api/device/heartbeat {
   access_by_lua_block {
-    local client_ip = ngx.var.remote_addr
-    local signature = ngx.req.get_headers()["X-Payment-Signature"]
-    local timestamp = ngx.req.get_headers()["X-Timestamp"]
+    local redis = require "resty.redis"
+    local red = redis:new()
     
-    -- IP 白名单校验
-    local allowed_ips = {"10.0.1.100", "10.0.1.101", "10.0.2.0/24"}
-    if not check_ip_whitelist(client_ip, allowed_ips) then
-      ngx.log(ngx.ERR, "Blocked IP: " .. client_ip)
+    -- 从请求参数中获取加密的设备号
+    local encrypted_device = ngx.var.arg_d
+    if not encrypted_device then
+      ngx.exit(400)
+    end
+    
+    -- AES 解密设备号
+    local device_id = aes_decrypt(encrypted_device, secret_key)
+    if not device_id then
+      ngx.log(ngx.ERR, "Failed to decrypt device ID")
       ngx.exit(403)
     end
     
-    -- HMAC-SHA256 签名校验
-    local payload = ngx.var.request_uri .. timestamp
-    local expected = compute_hmac_sha256(payload, secret_key)
-    if signature ~= expected then
-      ngx.log(ngx.ERR, "Invalid signature from: " .. client_ip)
-      ngx.exit(403)
-    end
+    -- 连接 Redis 并更新在线状态
+    red:connect("redis.internal", 6379)
+    red:setex("device:online:" .. device_id, 300, os.time())
+    red:close()
   }
 }
 ```
 
-这种自定义业务逻辑，没有任何内置插件能直接替代。以前遇到这种情况，要么硬着头皮学 WASM 开发，要么找借口拖延迁移。
+这种自定义业务逻辑（Redis 操作 + 参数解密），没有任何内置插件能直接替代。以前遇到这种情况，要么硬着头皮学 WASM 开发，要么找借口拖延迁移。
 
 **神奇的是，我什么都不用做。**
 
@@ -174,10 +176,10 @@ Clawdbot 在分析兼容性时发现这段 snippet 无法用内置插件替代�
 #### 1️⃣ 需求分析（3 秒）
 
 Clawdbot 分析 Lua 代码，提取出核心逻辑：
-- IP 白名单校验（支持 CIDR）
-- HMAC-SHA256 签名验证
-- 请求头读取：`X-Payment-Signature`、`X-Timestamp`
-- 错误日志记录
+- 从请求参数 `d` 读取加密设备号
+- AES 解密设备号
+- 连接 Redis，写入在线状态（TTL 300 秒）
+- 错误处理和日志记录
 
 #### 2️⃣ 代码生成（10 秒）
 
@@ -185,36 +187,33 @@ Clawdbot 分析 Lua 代码，提取出核心逻辑：
 
 ```go
 // 自动生成的 WASM 插件核心逻辑
-func (ctx *PaymentAuthPlugin) OnHttpRequestHeaders(numHeaders int, endOfStream bool) types.Action {
-    // 获取客户端 IP
-    clientIP, _ := proxywasm.GetProperty([]string{"source", "address"})
-    
-    // IP 白名单校验
-    if !ctx.checkIPWhitelist(string(clientIP)) {
-        proxywasm.LogErrorf("Blocked IP: %s", clientIP)
-        proxywasm.SendHttpResponse(403, nil, []byte("Forbidden"), -1)
-        return types.ActionPause
-    }
-    
-    // 读取签名相关请求头
-    signature, _ := proxywasm.GetHttpRequestHeader("X-Payment-Signature")
-    timestamp, _ := proxywasm.GetHttpRequestHeader("X-Timestamp")
+func (ctx *DeviceOnlinePlugin) OnHttpRequestHeaders(numHeaders int, endOfStream bool) types.Action {
+    // 读取加密设备号参数
     path, _ := proxywasm.GetProperty([]string{"request", "path"})
-    
-    // HMAC-SHA256 签名校验
-    payload := string(path) + timestamp
-    expectedSig := ctx.computeHMAC(payload)
-    if signature != expectedSig {
-        proxywasm.LogErrorf("Invalid signature from: %s", clientIP)
-        proxywasm.SendHttpResponse(403, nil, []byte("Invalid signature"), -1)
+    encryptedDevice := extractQueryParam(string(path), "d")
+    if encryptedDevice == "" {
+        proxywasm.SendHttpResponse(400, nil, []byte("Missing device parameter"), -1)
         return types.ActionPause
     }
+    
+    // AES 解密设备号
+    deviceID, err := ctx.aesDecrypt(encryptedDevice)
+    if err != nil {
+        proxywasm.LogErrorf("Failed to decrypt device ID: %v", err)
+        proxywasm.SendHttpResponse(403, nil, []byte("Invalid device ID"), -1)
+        return types.ActionPause
+    }
+    
+    // 异步更新 Redis（使用 Higress Redis cluster）
+    key := "device:online:" + deviceID
+    value := fmt.Sprintf("%d", time.Now().Unix())
+    ctx.redisClient.SetEx(key, value, 300) // TTL 300 秒
     
     return types.ActionContinue
 }
 ```
 
-生成的代码包含完整的配置解析、CIDR 匹配、HMAC 计算，开箱即用。
+生成的代码包含完整的参数解析、AES 解密、Redis 连接池管理，开箱即用。
 
 #### 3️⃣ 构建编译（3 秒）
 
@@ -231,8 +230,8 @@ GOOS=wasip1 GOARCH=wasm go build -o main.wasm ./
 
 ```bash
 # 构建 OCI 镜像并推送到 Harbor
-docker build -t harbor.internal/higress-plugins/payment-auth:v1 .
-docker push harbor.internal/higress-plugins/payment-auth:v1
+docker build -t harbor.internal/higress-plugins/device-online:v1 .
+docker push harbor.internal/higress-plugins/device-online:v1
 ```
 
 #### 5️⃣ 部署验证（1 分钟）
@@ -243,36 +242,33 @@ docker push harbor.internal/higress-plugins/payment-auth:v1
 apiVersion: extensions.higress.io/v1alpha1
 kind: WasmPlugin
 metadata:
-  name: payment-auth
+  name: device-online
   namespace: higress-system
 spec:
-  url: oci://harbor.internal/higress-plugins/payment-auth:v1
-  phase: AUTHN
+  url: oci://harbor.internal/higress-plugins/device-online:v1
+  phase: UNSPECIFIED_PHASE
   priority: 100
   defaultConfig:
-    allowedIPs:
-      - "10.0.1.100"
-      - "10.0.1.101"  
-      - "10.0.2.0/24"
-    secretKey: "${PAYMENT_SECRET_KEY}"
+    aesKey: "${DEVICE_AES_KEY}"
+    redisCluster: "redis.internal:6379"
+    ttl: 300
 ```
 
 然后自动跑测试：
 
 ```bash
-# 正常请求（白名单 IP + 正确签名）
-curl -H "X-Payment-Signature: ${VALID_SIG}" \
-     -H "X-Timestamp: ${TS}" \
-     http://localhost:8080/payment/bindcard
+# 正常请求（有效的加密设备号）
+curl "http://localhost:8080/api/device/heartbeat?d=${ENCRYPTED_DEVICE_ID}"
 # ✅ 200 OK
+# Redis 验证：redis-cli GET device:online:device123 -> 当前时间戳
 
-# 非法 IP
-curl --interface 192.168.1.1 http://localhost:8080/payment/bindcard  
-# ✅ 403 Forbidden
+# 缺少参数
+curl "http://localhost:8080/api/device/heartbeat"
+# ✅ 400 Bad Request
 
-# 错误签名
-curl -H "X-Payment-Signature: invalid" http://localhost:8080/payment/bindcard
-# ✅ 403 Invalid signature
+# 无效的加密数据
+curl "http://localhost:8080/api/device/heartbeat?d=invalid"
+# ✅ 403 Invalid device ID
 ```
 
 **全部通过。**
