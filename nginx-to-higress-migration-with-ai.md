@@ -126,7 +126,7 @@ Clawdbot 生成了测试脚本，覆盖所有 63 个 Ingress 的路由：
 
 | 原 nginx 配置 | Higress 方案 |
 |--------------|-------------|
-| 添加响应头 snippet | 使用内置 `custom-response` 插件 |
+| User-Agent 识别移动端特定版本，重定向到移动页面 | 使用内置 `request-block` 或 `transformer` 插件 |
 | IP 白名单 | 使用内置 `ip-restriction` 插件 |
 | Basic Auth | 使用内置 `basic-auth` 插件 |
 
@@ -311,9 +311,9 @@ curl -H "X-Payment-Signature: invalid" http://localhost:8080/payment/bindcard
 
 ### 2. 下发 snippet 替代配置（预计 10 分钟）
 针对 3 个使用 snippet 的 Ingress，通过插件配置实现等效功能：
+- 部署 request-block 插件配置（替代 User-Agent 识别 + 移动端路由 snippet）
 - 部署 ip-restriction 插件配置（替代 IP 白名单 snippet）
 - 部署 basic-auth 插件配置（替代认证 snippet）
-- 部署 custom-response-headers 插件配置（替代响应头 snippet）
 
 **注意：原有 Ingress 资源无需修改，保持 100% 兼容**
 
