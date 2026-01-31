@@ -21,22 +21,11 @@
 
 ## 为什么选择 Higress？
 
-面对 Ingress Nginx 退役，市面上的替代方案不少：Traefik、Kong、Envoy Gateway、还有 Higress。选哪个？
+面对 Ingress Nginx 退役，市面上的替代方案不少：Traefik、Kong、Envoy Gateway、Higress 等。
 
-我重点参考了 **Sealos 的实践经验**。Sealos 是一个超大规模的云操作系统，需要处理：
-- **2000+ 租户的 Ingress 配置**
-- **超高并发场景**
-- **复杂的多租户隔离需求**
+选型时我参考了 **Sealos 的实践**。他们 2023 年就完成了迁移，量级是 **2000+ 租户的超高并发场景**，有详细的技术对比文章可以参考：[《Sealos：为什么我们从 Nginx 切换到 Envoy/Higress（2000 租户实战）》](https://sealos.run/blog/sealos-envoy-vs-nginx-2000-tenants)
 
-他们在 2023 年（前年）就完成了从 Nginx 到 Higress 的迁移，并且写了详细的技术对比文章：[《Sealos：为什么我们从 Nginx 切换到 Envoy/Higress（2000 租户实战）》](https://sealos.run/blog/sealos-envoy-vs-nginx-2000-tenants)
-
-核心结论：
-- **性能提升显著**：在超大规模配置下，Higress 基于 Envoy 的架构优势明显
-- **配置热更新无损**：不需要 reload，避免连接中断
-- **原生支持 nginx annotations**：迁移成本极低
-- **WASM 插件生态**：自定义能力比 Lua 更强，而且更安全
-
-既然 Sealos 这种超大规模场景都验证通过了，我们这点量级就更没问题了。
+这种量级的生产验证给了我信心，至少说明 Higress 在稳定性和性能上是经过大规模考验的。
 
 ## 准备工作：给 Clawdbot 配置 Skill
 
