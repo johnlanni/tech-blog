@@ -14,7 +14,21 @@
 
 我看了眼集群里 60 多个 Ingress 资源，还有零零散散的 snippet 配置，脑子里已经开始盘算要加班几个晚上了。这不是"性能优化"的小需求，这是**安全合规的硬性要求**——再不迁移，等 ingress-nginx 停止维护，出了安全漏洞都没人修。
 
-直到我想起了前阵子配置的 Clawdbot，以及 Higress 社区刚发布的 nginx-to-higress-migration skill。
+直到我想起了前阵子配置的 Clawdbot，以及 Higress 社区刚发布的迁移 skill。
+
+## 准备工作：给 Clawdbot 配置 Skill
+
+开始之前，需要让 Clawdbot 学会这套迁移技能。配置方式很简单——把 Higress 仓库的 skills 目录给到 Clawdbot 就行：
+
+```
+https://github.com/alibaba/higress/tree/main/.claude/skills
+```
+
+这个目录下有两个关键 skill：
+- **nginx-to-higress-migration**：迁移主流程，负责分析兼容性、搭建仿真环境、生成测试和操作手册
+- **higress-wasm-go-plugin**：WASM 插件开发，当遇到 snippet 等内置插件无法覆盖的场景时会自动调用
+
+配置好之后，Clawdbot 就具备了完整的迁移能力——包括在需要时自动开发 WASM 插件，不用你额外操心。
 
 ## 先说结论
 
@@ -142,15 +156,9 @@ location /payment/bindcard {
 
 这种自定义业务逻辑，没有任何内置插件能直接替代。以前遇到这种情况，要么硬着头皮学 WASM 开发，要么找借口拖延迁移。
 
-但 Clawdbot 结合 `higress-wasm-go-plugin` skill，直接把这活给自动化了。
+**神奇的是，我什么都不用做。**
 
-**我只说了一句话：**
-
-```
-这段 Lua 脚本需要转成 Higress WASM 插件，帮我搞定
-```
-
-**接下来全程自动化：**
+Clawdbot 在分析兼容性时发现这段 snippet 无法用内置插件替代，就**自动调用了 `higress-wasm-go-plugin` skill**，开始了插件开发流程。整个过程我只是在旁边看着：
 
 #### 1️⃣ 需求分析（3 秒）
 
