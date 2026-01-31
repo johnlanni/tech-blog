@@ -137,13 +137,13 @@ Clawdbot 生成了测试脚本，覆盖所有 63 个 Ingress 的路由：
 
 | 原 nginx 配置 | Higress 方案 |
 |--------------|-------------|
-| 添加响应头 snippet | 使用 `headerControl` annotation |
+| 添加响应头 snippet | 使用内置 `custom-response` 插件 |
 | IP 白名单 | 使用内置 `ip-restriction` 插件 |
 | Basic Auth | 使用内置 `basic-auth` 插件 |
 
 **这三个都不需要写自定义 WASM 插件！** Higress 内置插件直接覆盖。
 
-Clawdbot 自动生成了替换后的 YAML，在 Kind 环境里验证通过。
+**关键是：原有 Ingress 资源完全不动**。Clawdbot 自动生成了对应的插件配置（WasmPlugin CRD），在 Kind 环境里验证通过。
 
 ### 番外：当内置插件搞不定时——WASM 插件全自动开发
 
@@ -320,8 +320,13 @@ curl -H "X-Payment-Signature: invalid" http://localhost:8080/payment/bindcard
 ### 1. 安装 Higress（预计 5 分钟）
 （具体命令）
 
-### 2. 修改 3 个使用 snippet 的 Ingress（预计 10 分钟）
-（具体 YAML diff）
+### 2. 下发 snippet 替代配置（预计 10 分钟）
+针对 3 个使用 snippet 的 Ingress，通过插件配置实现等效功能：
+- 部署 ip-restriction 插件配置（替代 IP 白名单 snippet）
+- 部署 basic-auth 插件配置（替代认证 snippet）
+- 部署 custom-response-headers 插件配置（替代响应头 snippet）
+
+**注意：原有 Ingress 资源无需修改，保持 100% 兼容**
 
 ### 3. 验证 Higress 路由（预计 10 分钟）
 （测试命令和预期结果）
@@ -341,12 +346,14 @@ curl -H "X-Payment-Signature: invalid" http://localhost:8080/payment/bindcard
 周一早上，我拿着这份手册，花了 30 分钟完成了迁移：
 
 1. **09:00** - 安装 Higress，和 nginx 并行运行
-2. **09:10** - 修改 3 个 Ingress，替换 snippet 为内置插件
+2. **09:10** - 下发插件配置，替代原 snippet 功能（Ingress 资源不动）
 3. **09:20** - 验证全部路由
 4. **09:25** - 切换 DNS
 5. **09:30** - 观察监控，一切正常
 
 **全程零报警，零回滚。**
+
+**关键优势：原有 Ingress 资源完全不需要修改，回滚就是切回 nginx，配置还在，风险极低。**
 
 ## 几点体会
 
