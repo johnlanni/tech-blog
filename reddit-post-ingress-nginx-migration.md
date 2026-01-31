@@ -26,6 +26,25 @@ We have 60+ Ingress resources in production, some with custom Lua snippets. I wa
 
 Then I tried something different: **AI-assisted migration using Clawdbot with Higress community's migration skill.**
 
+## Why Higress?
+
+With Ingress Nginx retiring, there are several alternatives: Traefik, Kong, Envoy Gateway, Higress, etc. Which to choose?
+
+I heavily referenced **Sealos's real-world experience**. Sealos is a massive cloud OS that handles:
+- **2000+ tenant Ingress configurations**
+- **Ultra-high concurrency scenarios**
+- **Complex multi-tenant isolation requirements**
+
+They migrated from Nginx to Higress back in 2023 and documented their experience: [Sealos: Why We Switched from Nginx to Envoy/Higress (2000 Tenants in Production)](https://sealos.io/blog/sealos-envoy-vs-nginx-2000-tenants)
+
+Key takeaways:
+- **Significant performance improvements** at massive scale
+- **Zero-downtime hot config reload** (no connection drops)
+- **Native nginx annotation support** (low migration cost)
+- **WASM plugin ecosystem** (more powerful and safer than Lua)
+
+If Sealos validated Higress at that scale, our workload would be trivial in comparison.
+
 ## The Setup
 
 Configured Clawdbot with two skills from the Higress repo:
