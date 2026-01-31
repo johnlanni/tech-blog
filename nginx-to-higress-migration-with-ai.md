@@ -227,7 +227,7 @@ func (ctx *PaymentAuthPlugin) OnHttpRequestHeaders(numHeaders int, endOfStream b
 
 生成的代码包含完整的配置解析、CIDR 匹配、HMAC 计算，开箱即用。
 
-#### 3️⃣ 构建编译（1 分钟）
+#### 3️⃣ 构建编译（3 秒）
 
 ```bash
 # Clawdbot 自动执行
@@ -238,7 +238,7 @@ GOOS=wasip1 GOARCH=wasm go build -o main.wasm ./
 
 编译成功，生成 `main.wasm` 文件。
 
-#### 4️⃣ 打包推送（30 秒）
+#### 4️⃣ 打包推送（10 秒）
 
 ```bash
 # 构建 OCI 镜像并推送到 Harbor
@@ -294,12 +294,12 @@ curl -H "X-Payment-Signature: invalid" http://localhost:8080/payment/bindcard
 |-----|-----|------|
 | 需求分析 | 3 秒 | AI 解析 Lua 代码 |
 | 代码生成 | 10 秒 | 生成完整 Go 项目 |
-| 编译构建 | 1 分钟 | WASM 编译 |
-| 镜像推送 | 30 秒 | 推送到 Harbor |
+| 编译构建 | 3 秒 | WASM 编译 |
+| 镜像推送 | 10 秒 | 推送到 Harbor |
 | 部署验证 | 1 分钟 | CRD 部署 + 测试 |
-| **总计** | **< 3 分钟** | 全程无需手写代码 |
+| **总计** | **< 2 分钟** | 全程无需手写代码 |
 
-以前这种活，光是学 proxy-wasm SDK 就得一两天，写代码调试再一两天，前后加起来一周起步。现在 **3 分钟**，而且生成的代码质量比我自己写的还规范。
+以前这种活，光是学 proxy-wasm SDK 就得一两天，写代码调试再一两天，前后加起来一周起步。现在 **不到 2 分钟**，而且生成的代码质量比我自己写的还规范。
 
 **这才是 AI 辅助开发该有的样子：不是帮你补全几行代码，而是把整个 DevOps 流程自动化。**
 
