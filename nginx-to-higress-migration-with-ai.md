@@ -205,16 +205,12 @@ func onHttpRequestHeaders(ctx wrapper.HttpContext, cfg config.DeviceOnlineConfig
         return types.ActionPause
     }
     
-    // 异步更新 Redis（使用 Lua 脚本保证原子性）
+    // 异步更新 Redis
     key := fmt.Sprintf("device:online:%s", deviceID)
-    timestamp := time.Now().Unix()
+    timestamp := fmt.Sprintf("%d", time.Now().Unix())
     
-    script := `redis.call('setex', KEYS[1], ARGV[1], ARGV[2]); return 1`
-    keys := []interface{}{key}
-    args := []interface{}{cfg.TTL, timestamp}
-    
-    err = cfg.RedisClient.Eval(script, 1, keys, args, func(response resp.Value) {
-        if response.Integer() == 1 {
+    err = cfg.RedisClient.SetEx(key, timestamp, cfg.TTL, func(response resp.Value) {
+        if response.Error() == nil {
             proxywasm.LogInfof("Device %s online status updated", deviceID)
         }
         proxywasm.ResumeHttpRequest()
@@ -232,7 +228,7 @@ func onHttpRequestHeaders(ctx wrapper.HttpContext, cfg config.DeviceOnlineConfig
 生成的代码包含：
 - 完整的参数解析和 AES 解密
 - Redis 客户端配置和连接池管理（在 parseConfig 中初始化）
-- 异步 Lua 脚本执行，保证性能
+- 异步 SetEx 调用，保证性能
 - 错误降级策略（Redis 失败不影响主流程）
 
 #### 3️⃣ 构建编译（3 秒）
