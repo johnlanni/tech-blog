@@ -45,7 +45,7 @@ Once configured, Clawdbot had complete migration capabilities - including automa
 
 **The entire migration validation, I spent less than 10 minutes actually typing.** Clawdbot ran everything in a local Kind cluster, validated all scenarios, and delivered a detailed runbook. All I had to do was review it and execute in production.
 
-Friday evening, 6 PM. I left the office on time.
+Friday evening, 5 PM. I left the office on time.
 
 ## Why Not Let AI Directly Touch Production?
 
