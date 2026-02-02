@@ -23,7 +23,7 @@ Then I remembered the Clawdbot setup I'd configured recently, along with the mig
 
 Facing the Ingress Nginx retirement, there are several alternatives: Traefik, Kong, Envoy Gateway, Higress, and more.
 
-During my evaluation, I referenced **Sealos's migration experience**. They completed their migration back in 2023 at scale - **2000+ tenants in ultra-high concurrency scenarios**. Their detailed technical comparison article is worth reading: [Sealos: Why We Switched from Nginx to Envoy/Higress (2000 Tenants in Production)](https://sealos.run/blog/sealos-envoy-vs-nginx-2000-tenants)
+During my evaluation, I referenced **Sealos's migration experience**. They completed their migration back in 2023 at scale - **2000+ tenants in ultra-high concurrency scenarios**. Their detailed technical comparison article is worth reading: [Sealos: Why We Switched from Nginx to Envoy/Higress (2000 Tenants in Production)](https://sealos.io/blog/sealos-envoy-vs-nginx-2000-tenants)
 
 This kind of production validation at scale gave me confidence that Higress had proven stability and performance in demanding environments.
 
@@ -398,5 +398,5 @@ This skill can compress the "migration validation" step to 30 minutes, freeing u
 ## Related Links
 
 - [Higress nginx-to-higress-migration skill](https://github.com/alibaba/higress/tree/main/.claude/skills/nginx-to-higress-migration)
-- [Higress official docs](https://higress.io/)
+- [Higress official docs](https://higress.io/en)
 - [Clawdbot](https://github.com/clawdbot/clawdbot)
