@@ -1,4 +1,4 @@
-# 30分钟搞定 Ingress Nginx 到 Higress 迁移？AI 帮我干完了脏活累活
+ # 30分钟搞定 Ingress Nginx 到 Higress 迁移？AI 帮我干完了脏活累活
 
 > 作者：一个不想加班的网关运维
 
@@ -29,13 +29,12 @@
 
 ## 准备工作：给 Clawdbot 配置 Skill
 
-开始之前，需要让 Clawdbot 学会这套迁移技能。配置方式很简单——把 Higress 仓库的 skills 目录给到 Clawdbot 就行：
+开始之前，需要让 Clawdbot 学会这套迁移技能。配置方式很简单——把 Higress 仓库的这两个 skills 链接给到 Clawdbot 就行：
 
 ```
-https://github.com/alibaba/higress/tree/main/.claude/skills
+https://github.com/alibaba/higress/tree/main/.claude/skills/higress-clawdbot-integration
+https://github.com/alibaba/higress/tree/main/.claude/skills/higress-wasm-go-plugin
 ```
-
-这个目录下有两个关键 skill：
 - **nginx-to-higress-migration**：迁移主流程，负责分析兼容性、搭建仿真环境、生成测试和操作手册
 - **higress-wasm-go-plugin**：WASM 插件开发，当遇到 snippet 等内置插件无法覆盖的场景时会自动调用
 
