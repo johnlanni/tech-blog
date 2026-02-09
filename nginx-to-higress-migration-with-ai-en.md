@@ -17,15 +17,19 @@ Friday afternoon, 4:30 PM. My manager drops this in our Slack channel:
 
 I looked at our cluster: 60+ Ingress resources, scattered configuration snippets. My brain started calculating how many late nights this would take. This wasn't just an optimization task - it was a **hard security compliance requirement**. Once ingress-nginx stops receiving updates, we'd be running vulnerable infrastructure with no patches available.
 
-Then I remembered the Clawdbot setup I'd configured recently, along with the migration skill the Higress community just released.
+Then I remembered the Clawdbot setup I'd configured recently, along with a migration skill someone had mentioned in the community.
 
-## Why Higress?
+## The Selection Process
 
-Facing the Ingress Nginx retirement, there are several alternatives: Traefik, Kong, Envoy Gateway, Higress, and more.
+With tight deadlines and limited resources, I needed a gateway with the highest Ingress Nginx compatibility possible - ideally something close to a drop-in replacement.
 
-During my evaluation, I referenced **Sealos's migration experience**. They completed their migration back in 2023 at scale - **2000+ tenants in ultra-high concurrency scenarios**. Their detailed technical comparison article is worth reading: [Sealos: Why We Switched from Nginx to Envoy/Higress (2000 Tenants in Production)](https://sealos.io/blog/sealos-envoy-vs-nginx-2000-tenants)
+During my search, I came across Higress. What caught my attention:
 
-This kind of production validation at scale gave me confidence that Higress had proven stability and performance in demanding environments.
+- **Annotation Compatibility**: Higress supports most of the ingress-nginx annotations out of the box, meaning minimal configuration changes
+- **AI-Assisted Migration**: There's an AI agent skill specifically designed for nginx migration, which could automate much of the tedious work
+- **Production Validation**: Companies like Sealos have successfully migrated at scale (**2000+ tenants in ultra-high concurrency scenarios**), proving it's battle-tested
+
+Given the time constraints and these factors, Higress seemed like the most practical choice.
 
 ## Setup: Configuring Clawdbot Skills
 
