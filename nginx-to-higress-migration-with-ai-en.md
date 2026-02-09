@@ -24,28 +24,28 @@ With tight deadlines and limited resources, I needed a gateway with the highest 
 During my search, I came across Higress. What caught my attention:
 
 - **Annotation Compatibility**: Higress supports most of the ingress-nginx annotations out of the box, meaning minimal configuration changes
-- **AI-Assisted Migration Skill**: Higress provides an AI agent skill specifically designed for nginx migration. I realized I could integrate this with my existing Clawdbot setup to automate much of the tedious work
+- **AI-Assisted Migration Skill**: Higress provides an AI agent skill specifically designed for nginx migration. I realized I could integrate this with my existing OpenClaw setup to automate much of the tedious work
 - **Production Validation**: Companies like [Sealos have successfully migrated at scale](https://sealos.io/blog/sealos-envoy-vs-nginx-2000-tenants) (**2000+ tenants in ultra-high concurrency scenarios**), proving it's battle-tested
 
 Given the time constraints and these factors, Higress seemed like the most practical choice.
 
-## Setup: Configuring Clawdbot Skills
+## Setup: Configuring OpenClaw Skills
 
-Before starting, I needed to teach Clawdbot these migration capabilities. The setup was straightforward - just provide these two skill links to Clawdbot:
+Before starting, I needed to teach OpenClaw these migration capabilities. The setup was straightforward - just provide these two skill links to OpenClaw:
 
 ```
-https://github.com/alibaba/higress/tree/main/.claude/skills/higress-clawdbot-integration
+https://github.com/alibaba/higress/tree/main/.claude/skills/nginx-to-higress-migration
 https://github.com/alibaba/higress/tree/main/.claude/skills/higress-wasm-go-plugin
 ```
 
 - **nginx-to-higress-migration**: Handles the migration workflow - compatibility analysis, simulation environment setup, test generation, and runbook creation
 - **higress-wasm-go-plugin**: WASM plugin development - automatically invoked when custom snippets can't be covered by built-in plugins
 
-Once configured, Clawdbot had complete migration capabilities - including automatically developing WASM plugins when needed, without any extra effort from me.
+Once configured, OpenClaw had complete migration capabilities - including automatically developing WASM plugins when needed, without any extra effort from me.
 
 ## TL;DR
 
-**The entire migration validation, I spent less than 10 minutes actually typing.** Clawdbot ran everything in a local Kind cluster, validated all scenarios, and delivered a detailed runbook. All I had to do was review it and execute in production.
+**The entire migration validation, I spent less than 10 minutes actually typing.** OpenClaw ran everything in a local Kind cluster, validated all scenarios, and delivered a detailed runbook. All I had to do was review it and execute in production.
 
 Friday evening, 5 PM. I left the office on time.
 
@@ -61,15 +61,15 @@ The skill design philosophy aligns perfectly with my values: **AI experiments in
 
 ## The Actual Process
 
-### Step 1: Let Clawdbot Understand Current State
+### Step 1: Let OpenClaw Understand Current State
 
-I simply told Clawdbot in Discord:
+I simply told OpenClaw in Discord:
 
 ```
 Analyze our current K8s cluster ingress-nginx config and prepare for migration to Higress
 ```
 
-Clawdbot automatically executed these commands:
+OpenClaw automatically executed these commands:
 
 ```bash
 kubectl get ingress -A -o yaml > ingress-backup.yaml
@@ -83,7 +83,7 @@ Within seconds, it produced an analysis report:
 - Using 18 different nginx annotations
 - **Found 3 Ingress resources using configuration-snippet** (this is tricky!)
 
-For those 3 snippets, Clawdbot detailed their functionality:
+For those 3 snippets, OpenClaw detailed their functionality:
 1. Adding custom response headers
 2. Simple IP whitelist validation
 3. Basic auth for an internal service
@@ -92,14 +92,14 @@ For those 3 snippets, Clawdbot detailed their functionality:
 
 This step is the essence of the entire workflow.
 
-Clawdbot automatically created a local K8s cluster using Kind, then:
+OpenClaw automatically created a local K8s cluster using Kind, then:
 
 1. Imported all production Ingress resources (sanitized)
 2. Deployed mock backend services
 3. Installed Higress with the same ingressClass configuration as production
 
 ```bash
-# Commands executed by Clawdbot
+# Commands executed by OpenClaw
 kind create cluster --name higress-migration-test
 
 # Install Higress (running in parallel with nginx)
@@ -115,7 +115,7 @@ This parameter is crucial - it prevents Higress from updating the Ingress status
 
 ### Step 3: Validate Migration Compatibility
 
-Clawdbot generated test scripts covering all 63 Ingress routes:
+OpenClaw generated test scripts covering all 63 Ingress routes:
 
 ```bash
 ./scripts/generate-migration-test.sh > migration-test.sh
@@ -124,7 +124,7 @@ Clawdbot generated test scripts covering all 63 Ingress routes:
 
 **60 passed immediately** because Higress natively supports standard nginx annotations.
 
-For the remaining 3 using snippets, Clawdbot analyzed and provided solutions:
+For the remaining 3 using snippets, OpenClaw analyzed and provided solutions:
 
 | Original nginx config | Higress solution |
 |----------------------|------------------|
@@ -134,7 +134,7 @@ For the remaining 3 using snippets, Clawdbot analyzed and provided solutions:
 
 **None of these required custom WASM plugins!** Higress built-in plugins covered them all.
 
-**The key: Original Ingress resources remained completely unchanged.** Clawdbot auto-generated corresponding plugin configurations (WasmPlugin CRDs) and validated them in the Kind environment.
+**The key: Original Ingress resources remained completely unchanged.** OpenClaw auto-generated corresponding plugin configurations (WasmPlugin CRDs) and validated them in the Kind environment.
 
 ### Bonus: Full Auto WASM Plugin Development When Built-ins Don't Cut It
 
@@ -173,11 +173,11 @@ This custom business logic (Redis operations + parameter decryption) couldn't be
 
 **The amazing part: I didn't have to do anything.**
 
-When Clawdbot analyzed compatibility and found this snippet couldn't be replaced by built-in plugins, it **automatically invoked the `higress-wasm-go-plugin` skill** and started the plugin development workflow. The entire process, I just watched from the sidelines:
+When OpenClaw analyzed compatibility and found this snippet couldn't be replaced by built-in plugins, it **automatically invoked the `higress-wasm-go-plugin` skill** and started the plugin development workflow. The entire process, I just watched from the sidelines:
 
 #### 1️⃣ Requirements Analysis (3 seconds)
 
-Clawdbot analyzed the Lua code and extracted core logic:
+OpenClaw analyzed the Lua code and extracted core logic:
 - Read encrypted device ID from request parameter `d`
 - AES decrypt device ID
 - Connect to Redis, write online status (TTL 300 seconds)
@@ -236,7 +236,7 @@ Generated code includes:
 #### 3️⃣ Build & Compile (3 seconds)
 
 ```bash
-# Clawdbot auto-executes
+# OpenClaw auto-executes
 cd payment-auth-plugin
 go mod tidy
 GOOS=wasip1 GOARCH=wasm go build -o main.wasm ./
@@ -308,7 +308,7 @@ Previously, this kind of work would take 1-2 days just to learn the proxy-wasm S
 
 ### Step 4: Runbook Generation
 
-After all validation passed, Clawdbot generated a detailed runbook for me:
+After all validation passed, OpenClaw generated a detailed runbook for me:
 
 ```markdown
 # Nginx to Higress Migration Runbook
@@ -366,7 +366,7 @@ Kind clusters cost almost nothing but catch 90% of problems. Let AI experiment i
 
 ### 2. AI is a Tool, Not a Replacement
 
-Clawdbot handled the analysis, validation, and documentation grunt work, but final execution was still me. This division makes sense - AI boosts efficiency, humans provide the safety net.
+OpenClaw handled the analysis, validation, and documentation grunt work, but final execution was still me. This division makes sense - AI boosts efficiency, humans provide the safety net.
 
 ### 3. Good Skill Design Matters
 
@@ -379,7 +379,7 @@ If it were designed as "AI directly migrates your production," I'd never use it.
 
 ### 4. Runbooks Have Test Evidence, Not AI Hallucination
 
-This is crucial - the runbook Clawdbot outputs traces back to actual test results in the Kind environment. Which Ingress needs changes, how to change it, expected outcomes - all validated, not AI making stuff up.
+This is crucial - the runbook OpenClaw outputs traces back to actual test results in the Kind environment. Which Ingress needs changes, how to change it, expected outcomes - all validated, not AI making stuff up.
 
 Using AI, the biggest fear is hallucination, especially for production operations. This workflow design minimizes hallucination risk: **Run tests first, generate docs second, conclusions in docs backed by test logs.**
 
@@ -401,4 +401,4 @@ This skill can compress the "migration validation" step to 30 minutes, freeing u
 
 - [Higress nginx-to-higress-migration skill](https://github.com/alibaba/higress/tree/main/.claude/skills/nginx-to-higress-migration)
 - [Higress official docs](https://higress.io/en)
-- [Clawdbot](https://github.com/clawdbot/clawdbot)
+- [OpenClaw](https://github.com/openclaw/openclaw)
