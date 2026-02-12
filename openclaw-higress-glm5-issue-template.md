@@ -156,6 +156,6 @@ AI 模型进化迅速。用户不应该为了使用新模型而等待软件发�
 
 ---
 
-Hope this helps the community! Would love to hear feedback.
+Hope this helps the community! Would love to hear feedback at https://github.com/alibaba/higress/issues
 
-希望这对社区有帮助！欢迎反馈。
+希望这对社区有帮助！欢迎在 https://github.com/alibaba/higress/issues 反馈。
