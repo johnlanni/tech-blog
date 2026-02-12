@@ -1,5 +1,3 @@
-# Use Higress to Access GLM-5 and Other Latest Models Without Waiting for OpenClaw Updates | 使用 Higress 接入 GLM-5 等最新模型，无需等待 OpenClaw 发版
-
 ## Problem
 
 OpenClaw currently has a hardcoded model list for each provider. When a new model is released (like GLM-5), users must wait for an official release to use it.
