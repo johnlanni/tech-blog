@@ -34,97 +34,68 @@ Error: Unknown model: zai/glm-5
 2. **任意模型支持**：只要是 OpenAI 兼容 API，就能接入
 3. **预配置常用模型**：插件内置了 Kimi-K2.5、Minimax-M2.1 等热门模型
 
-### 快速接入 GLM-5
+### 一句话完成配置
 
-通过 Higress 的 OpenClaw Integration Skill，整个接入过程只需要几步：
+通过 Higress 的 OpenClaw Integration Skill，整个接入过程只需要跟 OpenClaw 说一句话：
 
-```bash
-# 1. 下载部署脚本
-curl -fsSL https://raw.githubusercontent.com/higress-group/higress-standalone/main/all-in-one/get-ai-gateway.sh -o get-ai-gateway.sh
-chmod +x get-ai-gateway.sh
-
-# 2. 部署 Higress AI Gateway（配置智谱 + 自动路由）
-./get-ai-gateway.sh start --non-interactive \
-  --zhipuai-key <your-api-key> \
-  --auto-routing \
-  --auto-routing-default-model glm-5
+```
+帮我安装下这个skill，然后使用这个skill帮我配置higress：
+https://github.com/alibaba/higress/tree/main/.claude/skills/higress-openclaw-integration
 ```
 
-部署完成后，安装 OpenClaw 插件：
+OpenClaw 会自动：
+1. 安装 Higress Integration Skill
+2. 部署 Higress AI Gateway
+3. 配置你指定的模型供应商和 API Key
+4. 安装并启用 OpenClaw 插件
 
-```bash
-# 启用插件
-openclaw plugins enable higress
+配置完成后，你就可以直接使用 GLM-5 等新模型了：
 
-# 配置 provider（交互式）
-openclaw models auth login --provider higress --set-default
-
-# 重启 OpenClaw
-openclaw gateway restart
-```
-
-现在你就可以在 OpenClaw 中使用 GLM-5 了：
-
-```bash
+```yaml
 # 直接指定模型
 model: "higress/glm-5"
 
-# 或者使用自动路由
-model: "higress/auto"  # 会根据消息内容自动选择合适的模型
+# 或者使用自动路由（根据消息内容智能选择）
+model: "higress/auto"
 ```
 
-## 最爽的是：后续新增模型，无需重启
+## 最爽的是：后续新增模型，一句话搞定
 
-假设明天 DeepSeek 又发了新模型，或者 OpenAI 推出了 GPT-5.4，用 Higress 的方式是这样的：
+假设明天 DeepSeek 又发了新模型，或者 OpenAI 推出了 GPT-5.4，你只需要说：
 
-```bash
-# 直接添加新供应商的 API Key
-./get-ai-gateway.sh config add --provider deepseek --key <new-key>
-
-# 或者更新现有供应商的模型列表
-# 配置热加载，立即生效！
+```
+帮我添加 DeepSeek 的 API Key：sk-xxx
 ```
 
-**不需要重启 OpenClaw Gateway，不需要升级任何组件。**
+或者：
 
-甚至可以直接在 IM 工具中对话进行配置变更：
+```
+帮我把默认模型切换到 glm-5
+```
 
-> 用户："帮我把默认模型切换到 glm-5"
-> 
-> Higress Skill："已更新，配置已热加载生效"
+**不需要重启 OpenClaw Gateway，不需要升级任何组件，配置热加载立即生效。**
 
-这就是 Higress 作为 AI 网关的核心价值：**把模型接入变成配置问题，而不是开发问题**。
+这就是 Higress 作为 AI 网关的核心价值：**把模型接入变成对话问题，而不是开发问题**。
 
 ## 自动路由：让 AI 自己选择最合适的模型
 
-Higress 还支持自动路由功能，根据消息内容智能选择模型：
+Higress 还支持自动路由功能。同样只需要对话配置：
 
-```bash
-# 配置路由规则
-./get-ai-gateway.sh route add --model glm-5 --trigger "深入思考|复杂问题|架构设计"
-./get-ai-gateway.sh route add --model glm-4-flash --trigger "简单|快速|翻译"
+```
+帮我配置自动路由规则：
+- 遇到"深入思考"、"复杂问题"、"架构设计"时用 glm-5
+- 遇到"简单"、"快速"、"翻译"时用 glm-4-flash
 ```
 
-使用时只需要指定 `higress/auto`：
-
-```bash
-curl 'http://localhost:8080/v1/chat/completions' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "higress/auto",
-    "messages": [{"role": "user", "content": "深入思考 如何设计一个高并发系统？"}]
-  }'
-```
-
-系统会自动路由到 glm-5 进行深度推理。
+使用时只需要指定 `higress/auto`，系统会根据消息内容自动选择最合适的模型进行推理。
 
 ## 总结
 
 | 对比项 | OpenClaw 原生 | OpenClaw + Higress |
 |--------|--------------|-------------------|
-| 新模型支持 | 需要发版升级 | 配置即支持，热更新 |
-| 模型切换 | 修改配置重启 | IM 对话直接切换 |
-| 供应商管理 | 硬编码 | 配置驱动，灵活扩展 |
+| 新模型支持 | 需要发版升级 | 一句话对话配置 |
+| 模型切换 | 修改配置重启 | IM 对话即可 |
+| 供应商管理 | 硬编码 | 对话添加，热更新 |
 | 维护成本 | 等官方更新 | 自主可控，即时响应 |
 
 AI 模型迭代如此之快，把模型接入变成一个"发版问题"是不合理的。Higress 的设计理念是：**让 AI 应用的架构，跟上 AI 模型的进化速度**。
