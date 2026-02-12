@@ -24,7 +24,7 @@ I've created a Higress Integration Skill that allows OpenClaw users to access an
 Just send this message to OpenClaw:
 
 ```
-帮我安装下这个skill，然后使用这个skill帮我配置higress：
+Please install this skill and use it to configure Higress:
 https://github.com/alibaba/higress/tree/main/.claude/skills/higress-openclaw-integration
 ```
 
@@ -45,7 +45,7 @@ model: "higress/glm-5"
 When a new model is released, just say:
 
 ```
-帮我添加 DeepSeek 的 API Key：sk-xxx
+Please add DeepSeek API Key: sk-xxx
 ```
 
 No restart needed. No version upgrade needed. Hot reload takes effect immediately.
