@@ -39,12 +39,12 @@ Error: Unknown model: zai/glm-5
 通过 Higress 的 OpenClaw Integration Skill，整个接入过程只需要跟 OpenClaw 说一句话：
 
 ```
-帮我安装下这个skill，然后使用这个skill帮我配置higress：
-https://github.com/alibaba/higress/tree/main/.claude/skills/higress-openclaw-integration
+帮我下载并安装这个技能：https://higress.cn/skills/higress-openclaw-integration.zip
+然后使用这个技能帮我配置 Higress AI Gateway
 ```
 
 OpenClaw 会自动：
-1. 安装 Higress Integration Skill
+1. 下载并安装 Higress Integration Skill
 2. 部署 Higress AI Gateway
 3. 配置你指定的模型供应商和 API Key
 4. 安装并启用 OpenClaw 插件
@@ -101,6 +101,8 @@ Higress 还支持自动路由功能。同样只需要对话配置：
 AI 模型迭代如此之快，把模型接入变成一个"发版问题"是不合理的。Higress 的设计理念是：**让 AI 应用的架构，跟上 AI 模型的进化速度**。
 
 如果你也是 OpenClaw 用户，正在为模型支持问题头疼，不妨试试 [Higress OpenClaw Integration Skill](https://github.com/alibaba/higress/tree/main/.claude/skills/higress-openclaw-integration)，也许能解决你的燃眉之急。
+
+**💡 温馨提示**：如果你当前使用的模型能力较弱，无法自动完成配置，可以查看上面链接中的 Skill 说明文档，按照步骤手动配置 Higress AI Gateway。
 
 ---
 
