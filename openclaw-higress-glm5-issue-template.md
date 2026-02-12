@@ -75,7 +75,6 @@ This is especially valuable for:
 ### Resources
 
 - **Skill Repository**: https://github.com/alibaba/higress/tree/main/.claude/skills/higress-openclaw-integration
-- **Blog Post (Chinese)**: https://github.com/johnlanni/tech-blog/blob/main/openclaw-higress-glm5-integration.md
 
 ---
 
@@ -154,7 +153,6 @@ AI 模型进化迅速。用户不应该为了使用新模型而等待软件发�
 ### 资源
 
 - **Skill 仓库**: https://github.com/alibaba/higress/tree/main/.claude/skills/higress-openclaw-integration
-- **技术博客**: https://github.com/johnlanni/tech-blog/blob/main/openclaw-higress-glm5-integration.md
 
 ---
 
