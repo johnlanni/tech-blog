@@ -156,6 +156,10 @@ AI 模型进化迅速。用户不应该为了使用新模型而等待软件发�
 
 ---
 
-Hope this helps the community! Would love to hear feedback at https://github.com/alibaba/higress/issues
+Hope this helps the community! 
 
-希望这对社区有帮助！欢迎在 https://github.com/alibaba/higress/issues 反馈。
+I check Higress issues daily with my OpenClaw bot to resolve user problems promptly. If you encounter any issues, please feel free to create an issue at https://github.com/alibaba/higress/issues
+
+希望这对社区有帮助！
+
+我每天都会用我自己的 OpenClaw 机器人定时查看 issue，及时解决用户遇到的问题。如果你遇到任何问题，请随时在 https://github.com/alibaba/higress/issues 提 issue。
