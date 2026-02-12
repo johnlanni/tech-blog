@@ -1,8 +1,6 @@
 # Use Higress to Access GLM-5 and Other Latest Models Without Waiting for OpenClaw Updates | 使用 Higress 接入 GLM-5 等最新模型，无需等待 OpenClaw 发版
 
-## English Version
-
-### Problem
+## Problem
 
 OpenClaw currently has a hardcoded model list for each provider. When a new model is released (like GLM-5), users must wait for an official release to use it.
 
@@ -10,7 +8,7 @@ Example from [issue #14352](https://github.com/openclaw/openclaw/issues/14352):
 - Setting `model: zai/glm-5` results in `Error: Unknown model: zai/glm-5`
 - The default model is hardcoded as `glm-4.7`
 
-### Solution
+## Solution
 
 I've created a Higress Integration Skill that allows OpenClaw users to access any new model immediately through Higress AI Gateway, without waiting for OpenClaw updates.
 
@@ -19,7 +17,7 @@ I've created a Higress Integration Skill that allows OpenClaw users to access an
 - **Hot reload**: Add/update models without restarting OpenClaw gateway
 - **Conversation-based config**: Just talk to OpenClaw to add models
 
-### Quick Start
+## Quick Start
 
 Just send this message to OpenClaw:
 
@@ -40,7 +38,7 @@ After configuration, you can use GLM-5 immediately:
 model: "higress/glm-5"
 ```
 
-### Add New Models Anytime
+## Add New Models Anytime
 
 When a new model is released, just say:
 
@@ -50,7 +48,7 @@ Please add DeepSeek API Key: sk-xxx
 
 No restart needed. No version upgrade needed. Hot reload takes effect immediately.
 
-### Supported Providers
+## Supported Providers
 
 | Provider | Models |
 |----------|--------|
@@ -63,7 +61,7 @@ No restart needed. No version upgrade needed. Hot reload takes effect immediatel
 | OpenRouter | All models |
 | ...and more | |
 
-### Why This Matters
+## Why This Matters
 
 AI models are evolving rapidly. Users shouldn't have to wait for software releases to access new models. Higress decouples model configuration from the gateway, enabling instant support for any new model.
 
@@ -72,15 +70,19 @@ This is especially valuable for:
 - Teams needing specific model versions for production
 - Users in regions where certain providers are unavailable
 
-### Resources
+## Resources
 
 - **Skill Repository**: https://github.com/alibaba/higress/tree/main/.claude/skills/higress-openclaw-integration
 
+## Feedback
+
+Hope this helps the community! 
+
+I check Higress issues daily with my OpenClaw bot to resolve user problems promptly. If you encounter any issues, please feel free to create an issue at https://github.com/alibaba/higress/issues
+
 ---
 
-## 中文版本
-
-### 问题
+## 问题
 
 OpenClaw 目前对每个供应商都有硬编码的模型列表。当新模型发布时（如 GLM-5），用户必须等待官方发版才能使用。
 
@@ -88,7 +90,7 @@ OpenClaw 目前对每个供应商都有硬编码的模型列表。当新模型�
 - 设置 `model: zai/glm-5` 会报错 `Error: Unknown model: zai/glm-5`
 - 默认模型被硬编码为 `glm-4.7`
 
-### 解决方案
+## 解决方案
 
 我创建了一个 Higress Integration Skill，让 OpenClaw 用户可以通过 Higress AI Gateway 立即使用任何新模型，无需等待 OpenClaw 更新。
 
@@ -97,7 +99,7 @@ OpenClaw 目前对每个供应商都有硬编码的模型列表。当新模型�
 - **热更新**：添加/更新模型无需重启 OpenClaw 网关
 - **对话式配置**：只需跟 OpenClaw 对话就能添加模型
 
-### 快速开始
+## 快速开始
 
 只需向 OpenClaw 发送这条消息：
 
@@ -118,7 +120,7 @@ OpenClaw 会自动：
 model: "higress/glm-5"
 ```
 
-### 随时添加新模型
+## 随时添加新模型
 
 当新模型发布时，只需说：
 
@@ -128,7 +130,7 @@ model: "higress/glm-5"
 
 无需重启。无需版本升级。热更新立即生效。
 
-### 支持的供应商
+## 支持的供应商
 
 | 供应商 | 模型 |
 |--------|------|
@@ -141,7 +143,7 @@ model: "higress/glm-5"
 | OpenRouter | 所有模型 |
 | ...更多 | |
 
-### 为什么这很重要
+## 为什么这很重要
 
 AI 模型进化迅速。用户不应该为了使用新模型而等待软件发版。Higress 将模型配置与网关解耦，实现对任何新模型的即时支持。
 
@@ -150,15 +152,11 @@ AI 模型进化迅速。用户不应该为了使用新模型而等待软件发�
 - 生产环境需要特定模型版本的团队
 - 某些供应商不可用地区的用户
 
-### 资源
+## 资源
 
 - **Skill 仓库**: https://github.com/alibaba/higress/tree/main/.claude/skills/higress-openclaw-integration
 
----
-
-Hope this helps the community! 
-
-I check Higress issues daily with my OpenClaw bot to resolve user problems promptly. If you encounter any issues, please feel free to create an issue at https://github.com/alibaba/higress/issues
+## 反馈
 
 希望这对社区有帮助！
 
