@@ -4,7 +4,7 @@
 # This keeps the issue fresh and visible in the community
 
 REPO="openclaw/openclaw"
-TITLE="Enhance OpenClaw to Access Latest Models Instantly (e.g., GLM-5) | 增强 OpenClaw 随时接入最新模型（如 GLM-5）"
+TITLE="Enhance OpenClaw to Access Latest Models Instantly (e.g., GLM-5, MiniMax M2.5) | 增强 OpenClaw 随时接入最新模型（如 GLM-5、MiniMax M2.5）"
 BODY_FILE="/root/clawd/tech-blog/openclaw-higress-glm5-issue-template.md"
 ISSUE_NUMBER_FILE="/root/clawd/tech-blog/.last-issue-number"
 
@@ -39,6 +39,6 @@ recreate_issue() {
 # Main loop - run every 2 hours
 while true; do
     recreate_issue
-    echo "Waiting 2 hours before next recreation..."
-    sleep 7200  # 2 hours in seconds
+    echo "Waiting 1 hours before next recreation..."
+    sleep 3600  # 2 hours in seconds
 done
