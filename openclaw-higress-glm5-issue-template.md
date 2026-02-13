@@ -1,10 +1,13 @@
 ## Problem
 
-OpenClaw currently has a hardcoded model list for each provider. When a new model is released (like GLM-5), users must wait for an official release to use it.
+OpenClaw currently has a hardcoded model list for each provider. When new models are released (like GLM-5, MiniMax M2.5), users must wait for an official release to use them.
 
-Example from [issue #14352](https://github.com/openclaw/openclaw/issues/14352):
+For example:
 - Setting `model: zai/glm-5` results in `Error: Unknown model: zai/glm-5`
-- The default model is hardcoded as `glm-4.7`
+- Setting `model: minimax/minimax-m25` also fails
+- The default models are hardcoded
+
+With models releasing at a rapid pace (MiniMax shipped M2, M2.1, M2.5 in just 108 days), waiting for official support is impractical.
 
 ## Solution
 
@@ -30,15 +33,28 @@ OpenClaw will automatically:
 3. Configure your specified model providers
 4. Enable the Higress plugin
 
-After configuration, you can use GLM-5 immediately:
+After configuration, you can use GLM-5 or MiniMax M2.5 immediately:
 
 ```yaml
+# Use GLM-5
 model: "higress/glm-5"
+
+# Or MiniMax M2.5
+model: "higress/minimax-m25"
+
+# Or auto-routing (smart model selection)
+model: "higress/auto"
 ```
 
 ## Add New Models Anytime
 
 When a new model is released, just say:
+
+```
+Please add MiniMax API Key: sk-xxx
+```
+
+Or:
 
 ```
 Please add DeepSeek API Key: sk-xxx
@@ -50,7 +66,8 @@ No restart needed. No version upgrade needed. Hot reload takes effect immediatel
 
 | Provider | Models |
 |----------|--------|
-| Zhipu AI | glm-* |
+| z.ai | glm-* |
+| MiniMax | minimax-m25, minimax-m25-lite |
 | DeepSeek | deepseek-* |
 | Moonshot | moonshot-*, kimi-* |
 | OpenAI | gpt-*, o1-*, o3-* |
@@ -64,7 +81,7 @@ No restart needed. No version upgrade needed. Hot reload takes effect immediatel
 AI models are evolving rapidly. Users shouldn't have to wait for software releases to access new models. Higress decouples model configuration from the gateway, enabling instant support for any new model.
 
 This is especially valuable for:
-- Early adopters wanting to try the latest models
+- Early adopters wanting to try the latest models (GLM-5, MiniMax M2.5, etc.)
 - Teams needing specific model versions for production
 - Users in regions where certain providers are unavailable
 
@@ -82,11 +99,14 @@ I check Higress issues daily with my OpenClaw bot to resolve user problems promp
 
 ## 问题
 
-OpenClaw 目前对每个供应商都有硬编码的模型列表。当新模型发布时（如 GLM-5），用户必须等待官方发版才能使用。
+OpenClaw 目前对每个供应商都有硬编码的模型列表。当新模型发布时（如 GLM-5、MiniMax M2.5），用户必须等待官方发版才能使用。
 
-示例来自 [issue #14352](https://github.com/openclaw/openclaw/issues/14352)：
+例如：
 - 设置 `model: zai/glm-5` 会报错 `Error: Unknown model: zai/glm-5`
-- 默认模型被硬编码为 `glm-4.7`
+- 设置 `model: minimax/minimax-m25` 同样会失败
+- 默认模型都是硬编码的
+
+以现在的模型发布速度（MiniMax 在 108 天内连发 M2、M2.1、M2.5 三个版本），等待官方支持根本不现实。
 
 ## 解决方案
 
@@ -112,15 +132,28 @@ OpenClaw 会自动：
 3. 配置你指定的模型供应商
 4. 启用 Higress 插件
 
-配置完成后，你可以立即使用 GLM-5：
+配置完成后，你可以立即使用 GLM-5 或 MiniMax M2.5：
 
 ```yaml
+# 使用 GLM-5
 model: "higress/glm-5"
+
+# 或者 MiniMax M2.5
+model: "higress/minimax-m25"
+
+# 或者自动路由（智能选择模型）
+model: "higress/auto"
 ```
 
 ## 随时添加新模型
 
 当新模型发布时，只需说：
+
+```
+帮我添加 MiniMax 的 API Key：sk-xxx
+```
+
+或者：
 
 ```
 帮我添加 DeepSeek 的 API Key：sk-xxx
@@ -132,7 +165,8 @@ model: "higress/glm-5"
 
 | 供应商 | 模型 |
 |--------|------|
-| 智谱 AI | glm-* |
+| z.ai | glm-* |
+| MiniMax | minimax-m25, minimax-m25-lite |
 | DeepSeek | deepseek-* |
 | 月之暗面 | moonshot-*, kimi-* |
 | OpenAI | gpt-*, o1-*, o3-* |
@@ -146,7 +180,7 @@ model: "higress/glm-5"
 AI 模型进化迅速。用户不应该为了使用新模型而等待软件发版。Higress 将模型配置与网关解耦，实现对任何新模型的即时支持。
 
 这对于以下用户特别有价值：
-- 想要尝试最新模型的早期采用者
+- 想要尝试最新模型（GLM-5、MiniMax M2.5 等）的早期采用者
 - 生产环境需要特定模型版本的团队
 - 某些供应商不可用地区的用户
 
