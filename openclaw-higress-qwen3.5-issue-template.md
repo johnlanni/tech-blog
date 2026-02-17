@@ -3,7 +3,7 @@
 OpenClaw currently has a hardcoded model list for each provider. When new models are released (like Qwen3.5, GLM-5, MiniMax M2.5), users must wait for an official release to use them.
 
 For example:
-- Setting `model: higress/qwen3.5-plus` results in `Error: Unknown model`
+- Setting `model: qwen/qwen3.5-plus` results in `Error: Unknown model`
 - Setting `model: zai/glm-5` or `model: minimax/minimax-m25` also fails
 - The default models are hardcoded
 
@@ -22,6 +22,7 @@ I've created a Higress Integration Skill that allows OpenClaw users to access an
 **Why Qwen3.5?**
 - **Best price-performance ratio**: Qwen3.5 offers GPT-4 level performance at a fraction of the cost
 - **Strong Chinese language support**: Optimized for Chinese contexts and workflows
+- **Excellent vision capabilities**: Industry-leading image and video understanding
 - **Latest capabilities**: Launched Feb 2026 with cutting-edge reasoning and coding abilities
 - **Higress native integration**: Seamlessly routed through Higress gateway
 
@@ -44,7 +45,7 @@ After configuration, you can use Qwen3.5, GLM-5, or MiniMax M2.5 immediately:
 
 ```yaml
 # Use Qwen3.5 (Best value!)
-model: "higress/qwen3.5-plus"
+model: "qwen/qwen3.5-plus"
 
 # Or GLM-5
 model: "higress/glm-5"
@@ -54,6 +55,11 @@ model: "higress/minimax-m25"
 
 # Or auto-routing (smart model selection)
 model: "higress/auto"
+# Auto-routing intelligently selects models based on task:
+# - Images/videos → Qwen3.5-Plus (excellent vision capabilities)
+# - Code/reasoning → Qwen3.5-Plus or Claude
+# - Chinese content → Qwen3.5-Plus (optimized)
+# - General chat → Cost-optimized model
 ```
 
 ## Add New Models Anytime
@@ -119,7 +125,7 @@ I check Higress issues daily with my OpenClaw bot to resolve user problems promp
 OpenClaw 目前对每个供应商都有硬编码的模型列表。当新模型发布时（如 Qwen3.5、GLM-5、MiniMax M2.5），用户必须等待官方发版才能使用。
 
 例如：
-- 设置 `model: higress/qwen3.5-plus` 会报错 `Error: Unknown model`
+- 设置 `model: qwen/qwen3.5-plus` 会报错 `Error: Unknown model`
 - 设置 `model: zai/glm-5` 或 `model: minimax/minimax-m25` 同样会失败
 - 默认模型都是硬编码的
 
@@ -138,6 +144,7 @@ OpenClaw 目前对每个供应商都有硬编码的模型列表。当新模型�
 **为什么选择 Qwen3.5？**
 - **最佳性价比**：Qwen3.5 提供 GPT-4 级别性能，成本仅为一小部分
 - **强大的中文支持**：针对中文场景和工作流优化
+- **出色的视觉能力**：业界领先的图片和视频理解能力
 - **最新能力**：2026 年 2 月发布，具备前沿的推理和编码能力
 - **Higress 原生集成**：通过 Higress 网关无缝路由
 
@@ -160,7 +167,7 @@ OpenClaw 会自动：
 
 ```yaml
 # 使用 Qwen3.5（性价比最高！）
-model: "higress/qwen3.5-plus"
+model: "qwen/qwen3.5-plus"
 
 # 或者 GLM-5
 model: "higress/glm-5"
@@ -170,6 +177,11 @@ model: "higress/minimax-m25"
 
 # 或者自动路由（智能选择模型）
 model: "higress/auto"
+# 自动路由根据任务智能选择模型：
+# - 图片/视频 → Qwen3.5-Plus（视觉理解能力业界领先）
+# - 代码/推理 → Qwen3.5-Plus 或 Claude
+# - 中文内容 → Qwen3.5-Plus（深度优化）
+# - 日常对话 → 成本最优模型
 ```
 
 ## 随时添加新模型
